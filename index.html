@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Horómetro de camioneta</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#d61f26">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--card:#f6f4f4;--ink:#1c1515;--mut:#7a6d6d;--red:#d61f26;--redd:#a3151b;--ok:#1f8a4c;--line:#e6e0e0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171212;--card:#241c1c;--ink:#f6eeee;--mut:#a69a9a;--line:#3a2f2f}}
+:root[data-theme="dark"]{--bg:#171212;--card:#241c1c;--ink:#f6eeee;--mut:#a69a9a;--line:#3a2f2f}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.4 Barlow,system-ui,sans-serif;max-width:480px;margin-inline:auto;padding-bottom:84px}
+h1,h2,.num{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;margin:0}
+header{background:var(--red);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:24px}header small{opacity:.85;display:block;font-size:13px}
+.pill{background:#fff;color:var(--redd);border-radius:20px;padding:4px 12px;font-weight:600;font-size:13px}
+main{padding:14px}section{display:none}section.on{display:block}
+.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px}
+.hero{text-align:center}
+.ring{position:relative;width:230px;margin:6px auto}
+.ring svg{width:100%;transform:rotate(-90deg)}
+.ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .num{font-size:56px;line-height:1}
+.mut{color:var(--mut);font-size:14px}
+.eng{display:flex;align-items:center;justify-content:center;gap:10px;font:700 26px "Barlow Condensed",sans-serif;padding:12px;border-radius:12px;margin-top:8px}
+.eng.on{background:var(--red);color:#fff}.eng.off{background:var(--card);border:2px solid var(--line);color:var(--mut)}
+.dot{width:14px;height:14px;border-radius:50%;background:currentColor}.on .dot{animation:p 1.2s infinite}
+@keyframes p{50%{opacity:.25}}@media(prefers-reduced-motion:reduce){.on .dot{animation:none}}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:var(--card);border-radius:14px;padding:12px;border-left:5px solid var(--red)}
+.kpi .num{font-size:34px;line-height:1.1}.kpi.g{border-color:var(--ok)}
+.bar{height:12px;background:var(--line);border-radius:6px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--red);width:0}
+.alert{border-radius:12px;padding:12px;margin-bottom:12px;font-weight:600}
+.alert.warn{background:#fff3cd;color:#6b4e00}.alert.crit{background:var(--red);color:#fff}.alert.ok{background:#e3f4ea;color:#14613a}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .alert.ok{background:#173526;color:#9be3b9}:root:not([data-theme="light"]) .alert.warn{background:#3d3210;color:#ffd96b}}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
+input,select,textarea{width:100%;font:inherit;padding:12px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+input:focus,select:focus,button:focus-visible,nav button:focus-visible{outline:3px solid var(--red);outline-offset:1px}
+.hint{font-size:13px;color:var(--mut);margin-top:3px}.err{color:var(--red);font-size:13px;font-weight:600;min-height:0}
+.btn{background:var(--red);color:#fff;border:0;border-radius:12px;padding:15px;font:700 20px "Barlow Condensed",sans-serif;width:100%;margin-top:16px}
+.btn.sec{background:var(--card);color:var(--ink);border:2px solid var(--line)}
+h2{font-size:22px;margin:16px 0 4px}h2:first-child{margin-top:0}
+.ph{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ph figure{margin:0;background:var(--card);border-radius:12px;overflow:hidden}
+.ph img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}.ph figcaption{padding:6px 8px;font-size:13px}
+.chart{width:100%;height:110px;background:var(--bg);border-radius:10px;border:1px solid var(--line)}
+nav{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;display:flex;background:var(--bg);border-top:2px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;background:none;color:var(--mut);padding:10px 2px 8px;font:600 13px Barlow,sans-serif}
+nav button svg{display:block;margin:0 auto 2px;width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--red)}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:20px;font-weight:600;display:none;z-index:9}
+.hd{display:grid;grid-template-columns:48px 1fr 64px;gap:8px;align-items:center;font-size:14px}.hd .bar{margin:5px 0}.hd b{text-align:right}
+.row{display:flex;gap:8px}.row>*{flex:1}
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex;gap:10px;align-items:center"><img src="logo.svg" width="38" height="38" alt=""><div><h1>HORÓMETRO</h1><small id="hv">CAM-01 · Camioneta 4x4</small></div></div>
+  <span class="pill" id="pill">Demo</span>
+</header>
+<main>
+<!-- INICIO -->
+<section id="s-inicio" class="on">
+  <div id="alerts"></div>
+  <div class="card hero">
+    <div class="mut">Horas de arriendo usadas</div>
+    <div class="ring">
+      <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="12"/><circle id="arc" cx="60" cy="60" r="52" fill="none" stroke="var(--red)" stroke-width="12" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/></svg>
+      <div class="c"><div class="num" id="used">0.0</div><div class="mut">de <span id="lim">175</span> h</div></div>
+    </div>
+    <div class="eng off" id="eng"><span class="dot"></span><span id="engt">MOTOR APAGADO</span></div>
+  </div>
+  <div class="grid">
+    <div class="kpi g"><div class="mut">Horas faltantes</div><div class="num" id="rem">175.0</div></div>
+    <div class="kpi"><div class="mut">Consumido</div><div class="num" id="pct">0%</div></div>
+    <div class="kpi"><div class="mut">Horas hoy</div><div class="num" id="today">0.0</div></div>
+    <div class="kpi"><div class="mut">Promedio diario</div><div class="num" id="avg">0.0</div></div>
+    <div class="kpi"><div class="mut">Días de contrato restantes</div><div class="num" id="days">–</div></div>
+    <div class="kpi"><div class="mut">Horas se agotan en</div><div class="num" id="proj">–</div></div>
+  </div>
+  <div class="card" style="margin-top:12px"><b>Trabajo</b><div class="mut" id="job1">Sin registrar</div><div id="job2" style="margin-top:4px"></div></div>
+  <div class="card"><b>Contrato</b> <span class="mut" id="cname">Sin registrar</span>
+    <div class="bar"><i id="cbar"></i></div><div class="mut" id="ctxt">Completa el registro para ver el avance del contrato.</div></div>
+  <div class="card"><b>Historial de uso</b> <span class="mut">últimos 7 días</span>
+    <div id="hist" style="margin-top:8px"></div><div class="mut" id="histn"></div>
+    <div id="ses" class="mut" style="margin-top:8px;white-space:pre-line"></div></div>
+</section>
+
+<!-- SENSOR -->
+<section id="s-sensor">
+  <h2>Sensor de vibración</h2>
+  <div class="card">
+    <div class="grid"><div><div class="mut">Vibración actual</div><div class="num" style="font-size:40px"><span id="vib">0.00</span> g</div></div>
+    <div><div class="mut">Señal</div><div class="num" style="font-size:40px;color:var(--ok)" id="sig">En línea</div></div></div>
+    <svg class="chart" id="chart" viewBox="0 0 300 110" preserveAspectRatio="none"><line x1="0" x2="300" id="thl" stroke="var(--red)" stroke-dasharray="4 4"/><polyline id="pl" fill="none" stroke="var(--red)" stroke-width="2"/></svg>
+    <div class="hint">La línea punteada es el umbral: sobre ese valor el motor cuenta como encendido.</div>
+  </div>
+  <div class="card">
+    <b>Conexión con el equipo (ESP32)</b>
+    <div class="mut" id="lnk">Modo demo · datos simulados</div>
+    <label for="url">Dirección del ESP32</label><input id="url" value="http://192.168.4.1" inputmode="url">
+    <div class="hint">Conecta el celular al WiFi del equipo (HOROMETRO) y pulsa Conectar. No necesita internet.</div>
+    <div class="row"><button class="btn" id="conn">Conectar</button><button class="btn sec" id="exp">Exportar al SCADA</button></div>
+    <button class="btn sec" id="blog">Borrar historial del equipo</button>
+  </div>
+  <div class="card">
+    <b>Simulador (solo prototipo)</b>
+    <label for="simOn">Motor de la camioneta</label>
+    <select id="simOn"><option value="1">Encendido</option><option value="0">Apagado</option></select>
+    <label for="speed">Velocidad del tiempo</label>
+    <select id="speed"><option value="1">Tiempo real</option><option value="60" selected>x60 (1 s = 1 min)</option><option value="600">x600 (1 s = 10 min)</option></select>
+    <button class="btn sec" id="reset">Reiniciar horas a 0</button>
+  </div>
+  <div class="card mut">Hardware previsto: ESP32 + ADXL345 pegado al chasis cerca del motor. El ESP32 mide la vibración, decide encendido/apagado con umbral y envía el estado por WiFi. Esta pantalla se conectará a ese dato.</div>
+</section>
+
+<!-- FOTOS -->
+<section id="s-fotos">
+  <h2>Fotos del estado</h2>
+  <div class="mut">Toma o sube fotos del vehículo y agrega una nota.</div>
+  <label for="pnote">Nota (opcional)</label><input id="pnote" placeholder="Ej: rayón puerta derecha">
+  <label for="pfile">Foto</label><input id="pfile" type="file" accept="image/*" capture="environment">
+  <button class="btn" id="padd">Agregar foto</button>
+  <div class="ph" id="gal" style="margin-top:14px"></div>
+  <div class="mut" id="gempty">Aún no hay fotos.</div>
+</section>
+
+<!-- REGISTRO -->
+<section id="s-reg">
+  <h2>Operador</h2>
+  <label for="f_nom">Nombre completo</label><input id="f_nom" autocomplete="name">
+  <label for="f_rut">RUT</label><input id="f_rut" placeholder="12.345.678-9">
+  <label for="f_tel">Celular</label><input id="f_tel" type="tel" placeholder="+56 9 1234 5678">
+  <label for="f_mail">Correo</label><input id="f_mail" type="email" placeholder="operador@correo.cl">
+  <h2>Empresa</h2>
+  <label for="f_emp">Nombre de la empresa</label><input id="f_emp">
+  <label for="f_erut">RUT empresa</label><input id="f_erut">
+  <label for="f_cont">Contacto en la empresa</label><input id="f_cont" placeholder="Nombre y celular">
+  <h2>Vehículo</h2>
+  <div class="row"><div><label for="f_cod">Código</label><input id="f_cod" value="CAM-01"></div><div><label for="f_nint">N° interno</label><input id="f_nint" inputmode="numeric"></div></div>
+  <label for="f_tipo">Tipo</label><input id="f_tipo" value="Camioneta 4x4">
+  <div class="row"><div><label for="f_km">Kilometraje inicial</label><input id="f_km" type="number" inputmode="numeric" value="18420"></div><div><label for="f_comb">Combustible total (L)</label><input id="f_comb" type="number" inputmode="decimal" placeholder="0"></div></div>
+  <h2>Trabajo</h2>
+  <label for="f_faena">Faena o empresa a trabajar</label><input id="f_faena" placeholder="Ej: Faena Norte">
+  <label for="f_detalle">Detalle del trabajo</label><textarea id="f_detalle" rows="3" placeholder="Qué trabajo hará el vehículo"></textarea>
+  <h2>Contrato y arriendo</h2>
+  <label for="f_tarr">Tipo de arriendo</label><select id="f_tarr"><option>Por mes</option><option>Por semana</option><option>Por horas</option></select>
+  <div class="row"><div><label for="f_ini">Inicio del contrato</label><input id="f_ini" type="date"></div><div><label for="f_fin">Término</label><input id="f_fin" type="date"></div></div>
+  <label for="f_hc">Horas totales del contrato</label><input id="f_hc" type="number" inputmode="numeric" value="525">
+  <label for="f_ha">Horas de arriendo (alerta)</label><input id="f_ha" type="number" inputmode="numeric" value="175" min="175">
+  <div class="hint">Mínimo 175 horas.</div>
+  <label for="f_hi">Horas acumuladas actuales</label><input id="f_hi" type="number" inputmode="decimal" value="0" min="0">
+  <div class="err" id="err"></div>
+  <button class="btn" id="save">Guardar</button>
+</section>
+</main>
+
+<div id="toast"></div>
+<nav id="nav">
+  <button data-s="inicio" class="on"><svg viewBox="0 0 24 24"><path d="M3 12l9-8 9 8M5 10v10h14V10"/></svg>Inicio</button>
+  <button data-s="sensor"><svg viewBox="0 0 24 24"><path d="M2 12h4l3-8 4 16 3-8h6"/></svg>Sensor</button>
+  <button data-s="fotos"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Fotos</button>
+  <button data-s="reg"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM9 12h7M9 16h7"/></svg>Registro</button>
+</nav>
+
+<script>
+const $=id=>document.getElementById(id);
+const S={cfg:{limit:175,total:525,ini:null,fin:null,emp:"",base:0},used:0,on:false,vib:0.03,hist:[],streak:0,vibTh:0.25,log:[],dayKey:"",dayBase:0,dev:0,sensorOk:true,ses:[],hasLog:false};
+const link={timer:null,last:0};
+const fmt=n=>n.toFixed(1);
+// Fechas por defecto
+const d0=new Date();const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+$("f_ini").value=iso(d0);const d1=new Date(d0);d1.setDate(d1.getDate()+90);$("f_fin").value=iso(d1);
+// Persistencia simple por viewer
+try{const r=localStorage.getItem("horo_cfg");if(r){const o=JSON.parse(r);Object.assign(S.cfg,o.cfg);S.used=o.used||0;S.log=o.log||[];S.ses=o.ses||[];S.dayKey=o.dayKey||"";S.dayBase=o.dayBase||0;for(const k in o.f){if($(k))$(k).value=o.f[k]}}}catch(e){}
+function persist(){try{const f={};document.querySelectorAll("#s-reg input,#s-reg select,#s-reg textarea").forEach(e=>f[e.id]=e.value);localStorage.setItem("horo_cfg",JSON.stringify({cfg:S.cfg,used:S.used,log:S.log,ses:S.ses,dayKey:S.dayKey,dayBase:S.dayBase,f}))}catch(e){}}
+function toast(t){const e=$("toast");e.textContent=t;e.style.display="block";setTimeout(()=>e.style.display="none",2200)}
+// Navegación
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id==="s-"+b.dataset.s));scrollTo(0,0)});
+function go(s){document.querySelector(`nav [data-s=${s}]`).click()}
+// Guardar registro
+$("save").onclick=()=>{
+  const ha=+$("f_ha").value,hc=+$("f_hc").value,er=$("err");er.textContent="";
+  if(!$("f_nom").value.trim()||!$("f_emp").value.trim()||!$("f_faena").value.trim()){er.textContent="Completa operador, empresa y faena.";return}
+  if(!(ha>=175)){er.textContent="Las horas de arriendo deben ser 175 o más.";return}
+  if(hc<ha){er.textContent="Las horas del contrato no pueden ser menores a las de arriendo.";return}
+  if($("f_fin").value<=$("f_ini").value){er.textContent="El término debe ser posterior al inicio.";return}
+  S.cfg={limit:ha,total:hc,ini:$("f_ini").value,fin:$("f_fin").value,emp:$("f_emp").value.trim()};
+  S.cfg.base=+$("f_hi").value||0;S.used=S.cfg.base+(link.timer?S.dev:0);
+  $("hv").textContent=$("f_cod").value+" · "+$("f_tipo").value;
+  renderJob();persist();render();toast("Registro guardado");go("inicio")};
+$("reset").onclick=()=>{S.used=0;S.cfg.base=0;S.dayBase=0;if(link.timer)fetch($("url").value.trim().replace(/\/$/,"")+"/api/reset",{method:"POST"}).catch(()=>{});persist();render();toast("Horas reiniciadas")};
+// Fotos
+const gal=$("gal");
+$("padd").onclick=()=>{const f=$("pfile").files[0];if(!f){toast("Elige o toma una foto");return}
+  const r=new FileReader();r.onload=()=>{const fig=document.createElement("figure");const im=new Image();im.src=r.result;im.alt="Estado del vehículo";
+    const c=document.createElement("figcaption");c.textContent=($("pnote").value||"Sin nota")+" · "+new Date().toLocaleString("es-CL",{dateStyle:"short",timeStyle:"short"});
+    fig.append(im,c);gal.prepend(fig);$("gempty").style.display="none";$("pfile").value="";$("pnote").value="";toast("Foto agregada")};r.readAsDataURL(f)};
+// Simulación de sensor
+setInterval(()=>{
+  if(link.timer)return;
+  const simOn=$("simOn").value==="1",sp=+$("speed").value;
+  S.vib=simOn?0.45+Math.random()*0.9:0.01+Math.random()*0.06;
+  S.hist.push(S.vib);if(S.hist.length>40)S.hist.shift();
+  S.streak=S.vib>S.vibTh?Math.min(S.streak+1,3):Math.max(S.streak-1,-3);
+  S.on=S.streak>=2?true:S.streak<=-2?false:S.on;
+  if(S.on)S.used+=sp/3600;
+  render()},1000);
+setInterval(persist,5000);
+function render(){
+  const lim=S.cfg.limit,pct=Math.min(S.used/lim*100,999),rem=Math.max(lim-S.used,0);
+  $("used").textContent=fmt(S.used);$("lim").textContent=lim;$("rem").textContent=fmt(rem);
+  $("pct").textContent=Math.round(pct)+"%";const dk=iso(new Date());if(S.dayKey!==dk){S.dayKey=dk;S.dayBase=S.used}const pd=porDia();$("today").textContent=fmt(S.hasLog?(pd[dk]||0)/3600:Math.max(0,S.used-S.dayBase));
+  $("arc").style.strokeDashoffset=326.7*(1-Math.min(pct,100)/100);
+  const live=link.timer&&Date.now()-link.last<6000,lost=link.timer&&!live;
+  const e=$("eng");e.className="eng "+(S.on&&!lost?"on":"off");$("engt").textContent=lost?"SIN SEÑAL DEL EQUIPO":S.on?"MOTOR ENCENDIDO":"MOTOR APAGADO";
+  $("pill").textContent=lost?"Sin señal":S.on?"En marcha":"Detenido";
+  $("sig").textContent=!link.timer?"Demo":live?(S.sensorOk?"En línea":"Sensor sin datos"):"Sin señal";
+  $("sig").style.color=(!link.timer||live&&S.sensorOk)?"var(--ok)":"var(--red)";
+  $("lnk").textContent=!link.timer?"Modo demo · datos simulados":live?"Conectado · dato hace "+Math.round((Date.now()-link.last)/1000)+" s":"Sin señal · se muestran las últimas horas guardadas";
+  // Promedio y proyección
+  let dias=1;if(S.cfg.ini){dias=Math.max(1,Math.ceil((Date.now()-new Date(S.cfg.ini+"T00:00"))/864e5)+1)}
+  const avg=S.used/dias;$("avg").textContent=fmt(avg);
+  $("proj").textContent=avg>0.05?Math.ceil(rem/avg)+" d":"–";
+  if(S.cfg.fin){const left=Math.ceil((new Date(S.cfg.fin+"T23:59")-Date.now())/864e5);$("days").textContent=Math.max(left,0);
+    const tot=Math.max(1,(new Date(S.cfg.fin)-new Date(S.cfg.ini))/864e5),el=Math.min(100,Math.max(0,(tot-left)/tot*100));
+    $("cbar").style.width=el+"%";$("cname").textContent="· "+(S.cfg.emp||"");
+    $("ctxt").textContent="Día "+Math.min(dias,Math.round(tot))+" de "+Math.round(tot)+" · "+S.cfg.total+" h totales"}
+  // Alertas
+  let a="";
+  if(pct>=100)a='<div class="alert crit">Límite superado: '+fmt(S.used-lim)+' h sobre las '+lim+' h de arriendo.</div>';
+  else if(pct>=90)a='<div class="alert crit">Quedan solo '+fmt(rem)+' h. Coordina el cierre del arriendo.</div>';
+  else if(pct>=80)a='<div class="alert warn">Llegaste al 80% de las horas de arriendo.</div>';
+  else a='<div class="alert ok">Dentro del límite de horas.</div>';
+  $("alerts").innerHTML=a;
+  // Sensor
+  const d7=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=iso(d);d7.push([k,(pd[k]||0)/3600])}
+  const mx=Math.max(1,...d7.map(x=>x[1]));
+  $("hist").innerHTML=d7.map(([k,h])=>`<div class="hd"><span>${k.slice(8)}/${k.slice(5,7)}</span><div class="bar"><i style="width:${(h/mx*100).toFixed(0)}%"></i></div><b>${h.toFixed(1)} h</b></div>`).join("");
+  $("histn").textContent=S.hasLog?"":"Sin historial con fechas: conecta el equipo con su reloj (DS3231).";
+  $("ses").textContent=S.ses.slice(-5).reverse().map(x=>{const a=new Date(x.ini),b=x.fin?new Date(x.fin):null,hm=t=>t.toTimeString().slice(0,5);return iso(a).slice(5)+"  "+hm(a)+" → "+(b?hm(b)+" · "+((b-a)/36e5).toFixed(1)+" h":"en curso")}).join("\n");
+  $("vib").textContent=S.vib.toFixed(3);
+  const max=Math.max(0.1,S.vibTh*2,...S.hist)*1.1,y=v=>105-Math.min(v,max)/max*100;
+  $("thl").setAttribute("y1",y(S.vibTh));$("thl").setAttribute("y2",y(S.vibTh));
+  $("pl").setAttribute("points",S.hist.map((v,i)=>(i*300/39).toFixed(1)+","+y(v).toFixed(1)).join(" "));
+}
+function renderJob(){const v=id=>$(id).value.trim(),ok=v("f_faena");
+  $("job1").textContent=ok?"Faena: "+ok+" · N° interno "+(v("f_nint")||"–"):"Sin registrar";
+  $("job2").textContent=ok?"Combustible: "+(v("f_comb")||0)+" L · Km inicial: "+(v("f_km")||0)+(v("f_detalle")?" · "+v("f_detalle"):""):""}
+function logReading(force){const t=Date.now();if(!force&&t-(S.lastLog||0)<9e5)return;S.lastLog=t;S.log.push({t:new Date(t).toISOString(),horas:+S.used.toFixed(3),motor:S.on});if(S.log.length>500)S.log.shift()}
+async function poll(){
+  const u=$("url").value.trim().replace(/\/$/,"");
+  try{const c=new AbortController(),to=setTimeout(()=>c.abort(),2500);
+    const d=await(await fetch(u+"/api/estado",{signal:c.signal})).json();clearTimeout(to);
+    const ch=d.on!==S.on;link.last=Date.now();
+    S.vib=d.vib;S.vibTh=d.th;S.on=d.on;S.sensorOk=d.ok!==false;S.dev=d.horas;S.used=(S.cfg.base||0)+d.horas;
+    S.hist.push(d.vib);if(S.hist.length>40)S.hist.shift();logReading(ch);
+    if(!link.ts&&(!d.rtc||Math.abs(new Date(d.t)-Date.now())>12e4)){link.ts=true;syncHora(u)}
+    if(ch||Date.now()-(link.lgT||0)>6e4){link.lgT=Date.now();bajarLog(u,d.rtc)}}
+  catch(e){}
+  render()}
+$("conn").onclick=()=>{if(link.timer){clearInterval(link.timer);link.timer=null;$("conn").textContent="Conectar";toast("Modo demo");render();return}
+  link.ts=false;link.lgT=0;link.timer=setInterval(poll,2000);$("conn").textContent="Desconectar";poll()};
+$("exp").onclick=()=>{const v=id=>$(id).value.trim(),tm={"Por mes":"mes","Por semana":"semana","Por horas":"horas"};
+  const o={origen:"horometro-app",exportado:new Date().toISOString(),equipo:{codigo:v("f_cod"),nInterno:v("f_nint"),tipo:v("f_tipo"),estado:"ocupado",metric:+v("f_km")||0,ubicacion:v("f_faena"),detalleTrabajo:v("f_detalle"),combustibleTotalL:+v("f_comb")||0,arriendo:true,cliente:v("f_emp"),contactoEmpresa:v("f_cont"),operador:{nombre:v("f_nom"),rut:v("f_rut"),telefono:v("f_tel"),correo:v("f_mail")},tipoArriendo:tm[v("f_tarr")],inicio:v("f_ini"),fin:v("f_fin"),horasLimite:S.cfg.limit,horasAcumuladas:+S.used.toFixed(2)},sesiones:S.ses,lecturas:S.log};
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,1)],{type:"application/json"}));a.download="horas_"+(v("f_cod")||"equipo")+"_"+iso(new Date())+".json";a.click();toast("Archivo listo para el SCADA")};
+function parseLog(t){const out=[];let ini=null;
+  for(const l of t.split("\n")){if(!l)continue;const [ts,ev]=l.split(",");if(!ev||ts==="sin-hora"){ini=null;continue}
+    const d=new Date(ts.replace(" ","T"));if(isNaN(d))continue;
+    if(ev==="ON")ini=d;else if(ev==="OFF"&&ini){out.push({ini:ini.toISOString(),fin:d.toISOString()});ini=null}}
+  if(ini)out.push({ini:ini.toISOString(),fin:null});return out}
+function porDia(){const m={};
+  S.ses.forEach(x=>{let a=+new Date(x.ini);const b=x.fin?+new Date(x.fin):(S.on?Date.now():a);
+    while(a<b){const d=new Date(a),nx=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime(),e=Math.min(b,nx),k=iso(d);m[k]=(m[k]||0)+(e-a)/1000;a=e}});
+  return m}
+function syncHora(u){const n=new Date(),q=new URLSearchParams({y:n.getFullYear(),m:n.getMonth()+1,d:n.getDate(),h:n.getHours(),mi:n.getMinutes(),s:n.getSeconds()});
+  return fetch(u+"/api/hora?"+q,{method:"POST"}).catch(()=>{})}
+async function bajarLog(u,rtc){try{const t=await(await fetch(u+"/api/log")).text();S.ses=parseLog(t);S.hasLog=!!rtc&&S.ses.length>0;persist()}catch(e){}}
+$("blog").onclick=()=>{if(!link.timer){toast("Conecta el equipo primero");return}
+  if(!confirm("¿Borrar todo el historial guardado en el equipo?"))return;
+  fetch($("url").value.trim().replace(/\/$/,"")+"/api/borrarlog",{method:"POST"}).then(()=>{S.ses=[];S.hasLog=false;persist();render();toast("Historial borrado")}).catch(()=>toast("No se pudo borrar"))};
+renderJob();render();
+if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
